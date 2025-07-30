@@ -1,3 +1,4 @@
+using FluentValidation;
 using Northwind.Business.Abstract;
 using Northwind.Business.Concrete;
 using Northwind.DataAccess.Concrete.EntityFramework;
@@ -66,33 +67,53 @@ namespace WinFormsApp1
 
         private void add_btn_Click(object sender, EventArgs e)
         {
-            _productService.Add(new Product
+            try
             {
-                CategoryId = Convert.ToInt32(add_cb_category.SelectedValue),
-                ProductName = add_tb_pname.Text,
-                QuantityPerUnit = add_tb_unitq.Text,
-                UnitPrice = Convert.ToDecimal(add_tb_price.Text),
-                UnitsInStock = Convert.ToInt16(add_tb_stockq.Text),
-            });
-            MessageBox.Show("Product Added");
-            LoadProduct();
+                _productService.Add(new Product
+                {
+                    CategoryId = Convert.ToInt32(add_cb_category.SelectedValue),
+                    ProductName = add_tb_pname.Text,
+                    QuantityPerUnit = add_tb_unitq.Text,
+                    UnitPrice = Convert.ToDecimal(add_tb_price.Text),
+                    UnitsInStock = Convert.ToInt16(add_tb_stockq.Text),
+                });
+                MessageBox.Show("Product Added");
+                LoadProduct();
+            }
+            catch (FluentValidation.ValidationException ex)
+            {
+                MessageBox.Show(string.Join("\n", ex.Errors.Select(e => e.ErrorMessage)));
+            }
         }
 
         private void update_btn_Click(object sender, EventArgs e)
         {
-            _productService.Update(new Product
+            try
             {
-                ProductId = Convert.ToInt32(dataGridView1.CurrentRow.Cells[0].Value),
-                ProductName = u_tb_name.Text,
-                CategoryId = Convert.ToInt32(u_cb_category.SelectedValue),
-                UnitsInStock = Convert.ToInt16(u_tb_stockq.Text),
-                QuantityPerUnit = u_tb_unitq.Text,
-                UnitPrice = Convert.ToDecimal(u_tb_price.Text)
+                _productService.Update(new Product
+                {
+                    ProductId = Convert.ToInt32(dataGridView1.CurrentRow.Cells[0].Value),
+                    ProductName = u_tb_name.Text,
+                    CategoryId = Convert.ToInt32(u_cb_category.SelectedValue),
+                    UnitsInStock = Convert.ToInt16(u_tb_stockq.Text),
+                    QuantityPerUnit = u_tb_unitq.Text,
+                    UnitPrice = Convert.ToDecimal(u_tb_price.Text)
+                });
 
-            });
-            MessageBox.Show("Product Updated");
-            LoadProduct();
+                MessageBox.Show("Product Updated");
+                LoadProduct();
+            }
+            catch (ValidationException ex)
+            {
+                MessageBox.Show(string.Join("\n", ex.Errors.Select(err => err.ErrorMessage)));
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Sayý alanlarý için geçerli deðer girin.");
+                return;
+            }
         }
+
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
